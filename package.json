@@ -1,0 +1,19 @@
+{
+  "name": "ace-discord-committee-sync",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Sync approved Discord committee roles to the ACE Portal Members sheet.",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "sync-all": "node src/index.js --sync-all"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "discord.js": "^14.16.3",
+    "dotenv": "^16.4.5",
+    "googleapis": "^144.0.0"
+  }
+}
