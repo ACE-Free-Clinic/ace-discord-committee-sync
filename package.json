@@ -6,7 +6,8 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "sync-all": "node src/index.js --sync-all"
+    "sync-all": "node src/index.js --sync-all",
+    "test": "node --test"
   },
   "engines": {
     "node": ">=20"

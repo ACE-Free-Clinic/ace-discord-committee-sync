@@ -19,19 +19,17 @@ jobs:
     steps:
       - name: Check out bot source
         uses: actions/checkout@v4
-      - name: Locate project root
-        run: |
-          if [ -f package.json ] && [ -f package-lock.json ]; then
-            echo "SYNC_WORKDIR=." >> "$GITHUB_ENV"
-          elif [ -f discord-bot/package.json ] && [ -f discord-bot/package-lock.json ]; then
-            echo "SYNC_WORKDIR=discord-bot" >> "$GITHUB_ENV"
-          else
-            echo "Could not find package.json and package-lock.json in repo root or discord-bot/."
-            echo "Repo root contents:"
-            ls -la
-            exit 1
-          fi
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Test portal status role policy
+        run: npm test
       - name: Validate required secrets are present
+        shell: bash
         run: |
           missing=0
           for name in DISCORD_BOT_TOKEN DISCORD_GUILD_ID GOOGLE_SPREADSHEET_ID GOOGLE_SERVICE_ACCOUNT_EMAIL GOOGLE_PRIVATE_KEY; do
@@ -40,26 +38,14 @@ jobs:
               missing=1
             fi
           done
-          if [ "$missing" -ne 0 ]; then
-            exit 1
-          fi
+          if [ "$missing" -ne 0 ]; then exit 1; fi
         env:
           DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
           DISCORD_GUILD_ID: ${{ secrets.DISCORD_GUILD_ID }}
           GOOGLE_SPREADSHEET_ID: ${{ secrets.GOOGLE_SPREADSHEET_ID }}
           GOOGLE_SERVICE_ACCOUNT_EMAIL: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_EMAIL }}
           GOOGLE_PRIVATE_KEY: ${{ secrets.GOOGLE_PRIVATE_KEY }}
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
-          cache-dependency-path: ${{ env.SYNC_WORKDIR }}/package-lock.json
-      - name: Install dependencies
-        working-directory: ${{ env.SYNC_WORKDIR }}
-        run: npm ci
       - name: Sync Discord roles to the Members sheet
-        working-directory: ${{ env.SYNC_WORKDIR }}
         run: npm run sync-all
         env:
           DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
@@ -68,3 +54,5 @@ jobs:
           GOOGLE_SERVICE_ACCOUNT_EMAIL: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_EMAIL }}
           GOOGLE_PRIVATE_KEY: ${{ secrets.GOOGLE_PRIVATE_KEY }}
           MEMBERS_SHEET_NAME: Members
+          DISCORD_ROLE_SYNC_ENABLED: ${{ vars.DISCORD_ROLE_SYNC_ENABLED }}
+          DISCORD_STATUS_ROLE_TEST_USER_ID: ${{ vars.DISCORD_STATUS_ROLE_TEST_USER_ID }}
