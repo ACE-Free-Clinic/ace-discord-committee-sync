@@ -31,6 +31,23 @@ test('Archived members use inactive behavior and retain prior flag state', () =>
   assert.equal(plan.preserveStatusFlag, true);
 });
 
+test('Archived members without the Alumni role still use inactive behavior', () => {
+  assert.equal(getPortalStatusRolePlan('Inactive', true, '', false, false).inactive, true);
+});
+
+test('Archived members with the Alumni role are alumni, never inactive', () => {
+  const plan = getPortalStatusRolePlan('Inactive', true, '', true, true);
+  assert.equal(plan.alumni, true);
+  assert.equal(plan.inactive, false);
+  assert.equal(plan.snapshotToSave, '');
+});
+
+test('Alumni role does not make a non-archived member alumni', () => {
+  const plan = getPortalStatusRolePlan('Inactive', false, '', false, true);
+  assert.equal(plan.alumni, undefined);
+  assert.equal(plan.inactive, true);
+});
+
 test('Reactivation restores only a saved Status Flag snapshot', () => {
   const savedFlag = getPortalStatusRolePlan('Active', false, 'Yes', false);
   assert.equal(savedFlag.inactive, false);

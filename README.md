@@ -25,6 +25,7 @@ Members with multiple approved committee roles receive comma-separated committee
 | Active | `Active Member`; remove `Inactive Member` and `Status Flag` unless restoring a saved flag |
 | Probation | `Active Member` + `Status Flag`; remove `Inactive Member` |
 | Inactive or archived | Add `Inactive Member`; remove all other roles the bot can remove except a previously present `Status Flag` |
+| Archived with `Alumni <3` | Alumni, not inactive: roles are left untouched and `Inactive Member` is removed if present |
 | Reactivated/restored | Remove `Inactive Member`, add `Active Member`, restore saved `Status Flag`; committee roles are not automatically restored |
 
 The bot records whether `Status Flag` existed before deactivation so repeated runs do not lose its restoration state. Discord-managed roles, `@everyone`, and roles at/above the bot's highest role cannot be changed. The bot needs **Manage Roles**, and its role must be above `Active Member`, `Inactive Member`, `Status Flag`, committee roles, and all roles intended for removal. Because inactive processing removes every role the bot can manage, test with one non-admin member first.

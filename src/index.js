@@ -35,7 +35,8 @@ const MATCH_REVIEW_SHEET_NAME = 'Discord_Match_Review';
 const DISCORD_STATUS_ROLE_NAMES = {
   active: 'Active Member',
   inactive: 'Inactive Member',
-  flag: 'Status Flag'
+  flag: 'Status Flag',
+  alumni: 'Alumni <3'
 };
 const config = {
   token: process.env.DISCORD_BOT_TOKEN,
@@ -268,9 +269,10 @@ function suggestPortalRecord(records, member) {
   return matches.length === 1 ? matches[0] : null;
 }
 
-function getPortalStatusRolePlan(statusValue, isArchived, snapshotValue, currentlyHasStatusFlag) {
+function getPortalStatusRolePlan(statusValue, isArchived, snapshotValue, currentlyHasStatusFlag, hasAlumniRole = false) {
   const status = String(statusValue || '').trim().toLowerCase();
   const snapshot = String(snapshotValue || '').trim().toLowerCase();
+  if (isArchived && hasAlumniRole) return { alumni: true, inactive: false, snapshotToSave: '', preserveStatusFlag: true, shouldHaveStatusFlag: Boolean(currentlyHasStatusFlag) };
   const inactive = Boolean(isArchived) || status === 'inactive';
   if (inactive) return {
     inactive: true,
@@ -290,7 +292,11 @@ async function reconcilePortalStatusRole(sheets, member, record, row, roles) {
   const snapshotIndex = getHeaderIndex(record.loaded.headers, STATUS_FLAG_SNAPSHOT_HEADER);
   const snapshotValue = String(snapshotIndex >= 0 ? row[snapshotIndex] || '' : '').trim();
   const hasFlag = member.roles.cache.has(roles.flag.id);
-  const plan = getPortalStatusRolePlan(record.status, record.isArchived, snapshotValue, hasFlag);
+  const plan = getPortalStatusRolePlan(record.status, record.isArchived, snapshotValue, hasFlag, member.roles.cache.has(roles.alumni.id));
+  if (plan.alumni) {
+    if (member.roles.cache.has(roles.inactive.id)) await member.roles.remove(roles.inactive, 'ACE Portal alumni are not inactive');
+    return;
+  }
   if (plan.inactive) {
     if (plan.snapshotToSave && snapshotIndex >= 0) {
       row[snapshotIndex] = plan.snapshotToSave;
@@ -353,7 +359,7 @@ async function syncAll(guild) {
     for (const [key, name] of Object.entries(DISCORD_STATUS_ROLE_NAMES)) {
       const role = discordRoles.find(candidate => candidate.name === name);
       if (!role) throw new Error(`Required Discord role not found: ${name}`);
-      if (!role.editable) throw new Error(`The bot cannot manage Discord role "${name}". Move the bot role above it and verify Manage Roles.`);
+      if (key !== 'alumni' && !role.editable) throw new Error(`The bot cannot manage Discord role "${name}". Move the bot role above it and verify Manage Roles.`);
       roles[key] = role;
     }
     if (config.statusRoleTestUserId) console.log(`Status-role sync restricted to test user ${config.statusRoleTestUserId}.`);
