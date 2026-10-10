@@ -378,10 +378,9 @@ async function syncAll(guild) {
     const existing = recordsById.get(id) || [];
     let record = existing.length === 1 ? existing[0] : null;
     let matchedBy = record ? 'id' : '';
-    if (!existing.length && committee) {
-      const candidates = [identity.nickname, identity.globalName].map(normalizeName).filter(Boolean);
-      const matches = records.filter(candidate => !candidate.discordId && candidates.includes(normalizeName(candidate.name)));
-      if (matches.length === 1) { record = matches[0]; matchedBy = 'unique-name'; }
+    if (!existing.length) {
+      record = suggestPortalRecord(records, member);
+      if (record) matchedBy = 'unique-name';
     }
     if (existing.length > 1) results.push({ unmatched: true, userId: id, nickname: getMemberNickname(member), committee, reason: 'Discord ID appears on multiple portal rows' });
 
@@ -394,7 +393,7 @@ async function syncAll(guild) {
       setRowValue(row, record.loaded.headers, 'Discord Global Name', identity.globalName);
       setRowValue(row, record.loaded.headers, 'Discord Nickname', identity.nickname);
       const inactive = record.isArchived || record.status.toLowerCase() === 'inactive';
-      if (!inactive && record.sheetName === activeName) setRowValue(row, record.loaded.headers, 'Committee', committee || '');
+      if (!inactive && record.sheetName === activeName && committee) setRowValue(row, record.loaded.headers, 'Committee', committee);
       record.row = row;
       record.discordId = id;
       if (roles && shouldSyncStatusRoleForUser(id, config.statusRoleTestUserId)) {
@@ -491,4 +490,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { getPortalStatusRolePlan, normalizeName, shouldSyncStatusRoleForUser };
+module.exports = { getPortalStatusRolePlan, normalizeName, shouldSyncStatusRoleForUser, suggestPortalRecord };
