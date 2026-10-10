@@ -42,10 +42,10 @@ test('Archived members with the Alumni role are alumni, never inactive', () => {
   assert.equal(plan.snapshotToSave, '');
 });
 
-test('Alumni role does not make a non-archived member alumni', () => {
-  const plan = getPortalStatusRolePlan('Inactive', false, '', false, true);
-  assert.equal(plan.alumni, undefined);
-  assert.equal(plan.inactive, true);
+test('Alumni role wins even before the portal has archived the member', () => {
+  const plan = getPortalStatusRolePlan('Active', false, '', false, true);
+  assert.equal(plan.alumni, true);
+  assert.equal(plan.inactive, false);
 });
 
 test('Reactivation restores only a saved Status Flag snapshot', () => {

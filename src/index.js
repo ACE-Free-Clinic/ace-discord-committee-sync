@@ -272,7 +272,7 @@ function suggestPortalRecord(records, member) {
 function getPortalStatusRolePlan(statusValue, isArchived, snapshotValue, currentlyHasStatusFlag, hasAlumniRole = false) {
   const status = String(statusValue || '').trim().toLowerCase();
   const snapshot = String(snapshotValue || '').trim().toLowerCase();
-  if (isArchived && hasAlumniRole) return { alumni: true, inactive: false, snapshotToSave: '', preserveStatusFlag: true, shouldHaveStatusFlag: Boolean(currentlyHasStatusFlag) };
+  if (hasAlumniRole) return { alumni: true, inactive: false, snapshotToSave: '', preserveStatusFlag: true, shouldHaveStatusFlag: Boolean(currentlyHasStatusFlag) };
   const inactive = Boolean(isArchived) || status === 'inactive';
   if (inactive) return {
     inactive: true,
